@@ -1,0 +1,25 @@
+{
+  "architecture": "MNISTCNN3",
+  "fp32": {
+    "correct": 9752,
+    "total": 10000,
+    "accuracy_percent": 97.52,
+    "cpu_ms_per_image": 0.24950379000074463
+  },
+  "int8_reference": {
+    "correct": 9757,
+    "total": 10000,
+    "accuracy_percent": 97.57,
+    "cpu_ms_per_image": 41.24872170000017
+  },
+  "rtl_python_argmax_agreement_current_modular_top": {
+    "correct": 1,
+    "total": 1,
+    "agreement_percent": 100.0
+  },
+  "previous_integrated_top_rtl_python_argmax_agreement": {
+    "correct": 100,
+    "total": 100,
+    "agreement_percent": 100.0
+  }
+}

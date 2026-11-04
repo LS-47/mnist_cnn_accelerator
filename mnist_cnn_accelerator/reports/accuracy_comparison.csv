@@ -1,0 +1,8 @@
+implementation,correct,total,accuracy_percent,rtl_vs_python_images,rtl_python_agreement_percent
+FP32_PyTorch,9752,10000,97.52,,
+INT8_Python_reference,9757,10000,97.57,,
+INT8_RTL_pre_module_refactor,,,,100,100.00
+INT8_RTL_current_modules,,,,1,100.00
+INT16_Python_reference,9754,10000,97.54,,
+INT16_RTL_pre_module_refactor,,,,100,100.00
+INT16_RTL_current_modules,,,,1,100.00

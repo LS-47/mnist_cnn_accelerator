@@ -1,0 +1,12 @@
+INT16 completed 10/100 images
+INT16 completed 20/100 images
+INT16 completed 30/100 images
+INT16 completed 40/100 images
+INT16 completed 50/100 images
+INT16 completed 60/100 images
+INT16 completed 70/100 images
+INT16 completed 80/100 images
+INT16 completed 90/100 images
+INT16 completed 100/100 images
+PASS: all 100 INT16 RTL predictions match Python reference
+tb/tb_cnn_int16.v:39: $finish called at 233569055000 (1ps)

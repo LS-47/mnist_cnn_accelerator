@@ -1,0 +1,14 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Vivado generated working files; keep .xpr, RTL, constraints, and source data
+vivado/**/.Xil/
+vivado/**/*.cache/
+vivado/**/*.hw/
+vivado/**/*.ip_user_files/
+vivado/**/*.runs/
+vivado/**/*.sim/
+vivado/**/*.jou
+vivado/**/*.log
+vivado/**/*.str

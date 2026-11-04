@@ -1,0 +1,102 @@
+{
+  "scheme": "symmetric signed INT16 weights; unsigned calibrated INT16 activation codes",
+  "activation_calibration_images": 1000,
+  "activation_limits": {
+    "input": 3640,
+    "conv1": 455,
+    "conv2": 227,
+    "conv3": 1023,
+    "fc1": 2047
+  },
+  "activation_scales_float_per_integer_code": {
+    "input": 0.0002747252747252747,
+    "conv1": 0.009308213454026442,
+    "conv2": 0.07059188036141417,
+    "conv3": 0.05578935833853594,
+    "fc1": 0.024235617782525684
+  },
+  "weight_limit": 32767,
+  "accumulator": "signed INT32; worst-case MAC bound reserves half range for bias",
+  "layers": {
+    "conv1": {
+      "weight_shape": [
+        8,
+        1,
+        3,
+        3
+      ],
+      "weight_scale": 2.9889813959016465e-05,
+      "input_scale": 0.0002747252747252747,
+      "output_scale": 0.009308213454026442,
+      "requant_multiplier_q31": 1894,
+      "bias_scale": 8.21148735137815e-09,
+      "max_abs_quantized_bias": 40263764,
+      "theoretical_mac_bound_without_bias": 1073479680,
+      "observed_max_abs_accumulator_test_set": 515770772
+    },
+    "conv2": {
+      "weight_shape": [
+        16,
+        8,
+        3,
+        3
+      ],
+      "weight_scale": 3.068540172534995e-05,
+      "input_scale": 0.009308213454026442,
+      "output_scale": 0.07059188036141417,
+      "requant_multiplier_q31": 8689,
+      "bias_scale": 2.856262691821086e-07,
+      "max_abs_quantized_bias": 972670,
+      "theoretical_mac_bound_without_bias": 1073479680,
+      "observed_max_abs_accumulator_test_set": 58794652
+    },
+    "conv3": {
+      "weight_shape": [
+        32,
+        16,
+        3,
+        3
+      ],
+      "weight_scale": 2.3585134840686806e-05,
+      "input_scale": 0.07059188036141417,
+      "output_scale": 0.05578935833853594,
+      "requant_multiplier_q31": 64087,
+      "bias_scale": 1.664919016981584e-06,
+      "max_abs_quantized_bias": 128731,
+      "theoretical_mac_bound_without_bias": 1071120384,
+      "observed_max_abs_accumulator_test_set": 35513014
+    },
+    "fc1": {
+      "weight_shape": [
+        16,
+        32
+      ],
+      "weight_scale": 1.495932610851014e-05,
+      "input_scale": 0.05578935833853594,
+      "output_scale": 0.024235617782525684,
+      "requant_multiplier_q31": 73950,
+      "bias_scale": 8.345712047706886e-07,
+      "max_abs_quantized_bias": 262737,
+      "theoretical_mac_bound_without_bias": 1072693248,
+      "observed_max_abs_accumulator_test_set": 58787645
+    },
+    "fc2": {
+      "weight_shape": [
+        10,
+        16
+      ],
+      "weight_scale": 1.8396922314423136e-05,
+      "input_scale": 0.024235617782525684,
+      "output_scale": 1.0,
+      "requant_multiplier_q31": 957,
+      "bias_scale": 4.458607775871769e-07,
+      "max_abs_quantized_bias": 731820,
+      "theoretical_mac_bound_without_bias": 1073217536,
+      "observed_max_abs_accumulator_test_set": 58887057
+    }
+  },
+  "fp32_correct": 9752,
+  "int16_correct": 9754,
+  "test_images": 10000,
+  "rtl_vectors": 100
+}

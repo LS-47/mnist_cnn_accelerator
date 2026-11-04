@@ -1,0 +1,12 @@
+INT8 completed 10/100 images
+INT8 completed 20/100 images
+INT8 completed 30/100 images
+INT8 completed 40/100 images
+INT8 completed 50/100 images
+INT8 completed 60/100 images
+INT8 completed 70/100 images
+INT8 completed 80/100 images
+INT8 completed 90/100 images
+INT8 completed 100/100 images
+PASS: all 100 INT8 RTL predictions match Python reference
+tb/tb_cnn_int8.v:39: $finish called at 233569055000 (1ps)

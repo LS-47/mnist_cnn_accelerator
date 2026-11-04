@@ -1,0 +1,6 @@
+WARNING: tb/tb_cnn_int8.v:20: $readmemh(C:/Users/User/Documents/ChatGPT/FinalYEARproject/mnist_cnn_accelerator/tb/data/mnist100_pixels_int8.mem): Too many words in the file for the requested range [0:783].
+WARNING: tb/tb_cnn_int8.v:21: $readmemh(C:/Users/User/Documents/ChatGPT/FinalYEARproject/mnist_cnn_accelerator/tb/data/mnist100_expected_int8.mem): Too many words in the file for the requested range [0:0].
+WARNING: tb/tb_cnn_int8.v:22: $readmemh(C:/Users/User/Documents/ChatGPT/FinalYEARproject/mnist_cnn_accelerator/tb/data/mnist100_labels.mem): Too many words in the file for the requested range [0:0].
+INT8 image 0: RTL=7 Python=7 MNIST_label=7
+PASS: all 1 INT8 RTL predictions match Python reference
+tb/tb_cnn_int8.v:43: $finish called at 2335745000 (1ps)
