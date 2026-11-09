@@ -104,6 +104,8 @@ for name, layer in layers.items():
     if np.any(bias < -(1 << 31)) or np.any(bias > MAX_ACC):
         raise OverflowError(f"INT32 bias overflow in {name}")
     multiplier = int(np.rint((si * ws / so) * (1 << 31)))
+    if not 0 <= multiplier < (1 << 24):
+        raise OverflowError(f"Q31 multiplier does not fit the 24-bit RTL port in {name}: {multiplier}")
     quantized[name] = (qw, bias.astype(np.int32), multiplier)
     np.savetxt(os.path.join(OUT, name + "_weight.mem"), qw.reshape(-1).view(np.uint16), fmt="%04x")
     np.savetxt(os.path.join(OUT, name + "_bias.mem"), bias & 0xffffffff, fmt="%08x")

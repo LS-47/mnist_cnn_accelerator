@@ -23,7 +23,38 @@ INT8 and INT16 exports are both derived from the same FP32 checkpoint. The INT8 
 - `tb/tb_cnn_int8.v` and `tb/tb_cnn_int16.v` feed the first 100 MNIST test images and compare the RTL class against the matching bit-accurate Python prediction. These expected values check hardware/reference agreement; they are not ground-truth labels. `tb/data/mnist100_labels.mem` contains the actual labels. Each image prints the RTL result, Python result, and true MNIST label.
 - Before extracting the arithmetic blocks into separate modules, both complete FSM tops passed all 100 images in Icarus Verilog. After module extraction, both precision builds compile and the current module-based tops pass the first MNIST image in simulation. The updated 100-image run is left for the Vivado project/testbench workflow.
 
-Each RTL top processes a single image through serialized FSM stages. One INT8 image takes 233,569 clocks in simulation. At a 10 ns clock that would be about 2.34 ms, but this is a target period, not a measured hardware latency; synthesis timing has not been run for these standalone projects. Package pin assignments are intentionally not included because the exact board is unspecified.
+Each inference core processes one image at a time. Its controller now tracks spatial and kernel coordinates with counters instead of synthesizing variable divide/modulo arithmetic. The Q31 requantizer uses the actual 24-bit positive multiplier range from the exported model instead of a 64-bit multiplier input.
+
+## Program the Nexys 4 DDR
+
+The board-level tops use the USB-UART port so a complete image can be supplied from a PC; they do not rely on manually setting 784 pixel values on switches. Connect the board's programming/UART micro-USB cable. The host sends exactly 784 unsigned grayscale bytes in row-major order at 115200 baud, 8-N-1. The FPGA sends back the predicted class as one ASCII character (`0` through `9`) and shows the class in binary on LEDs 3:0. LED 15 indicates a result has been produced, LED 14 indicates inference is running, and LED 13 indicates the image receiver is ready.
+
+INT8 input pixels are the received byte values (0–255). INT16 converts each byte to the exported calibrated input range (0–3640) before inference. Both use the same trained checkpoint and their own exported weights. For arbitrary pictures, provide a centered 28×28 grayscale digit with a dark background and a light digit; `--invert` handles the opposite polarity.
+
+1. Open `vivado/int8/mnist_cnn_int8.xpr` or `vivado/int16/mnist_cnn_int16.xpr` in Vivado 2026.1.
+2. In the Vivado Tcl Console, set the precision and source `scripts/upgrade_vivado_project_for_board.tcl`, for example:
+
+   ```tcl
+   set CNN_PRECISION int8
+   set project_dir [get_property DIRECTORY [current_project]]
+   set project_root [file normalize [file join $project_dir .. ..]]
+   source [file join $project_root scripts upgrade_vivado_project_for_board.tcl]
+   ```
+
+3. Confirm the project top is `nexys4ddr_int8_top` (or `nexys4ddr_int16_top`), then run **Generate Bitstream**. The script loads the 100 MHz Nexys clock constraint, board pin assignments, UART/board RTL, clock wizard and precision-specific weight memories.
+4. Program the board with the resulting `.bit` file using Hardware Manager. In Windows Device Manager, find the board's USB Serial Port COM number.
+5. Install host dependencies and classify an image:
+
+   ```powershell
+   python -m pip install -r requirements-hardware.txt
+   python python/uart_infer.py --port COM5 --image path\to\digit.png
+   ```
+
+   Replace `COM5` and the image path as needed. The LED class and serial reply should show a digit after the image is sent.
+
+   To measure real FPGA accuracy on the first 100 official MNIST test images, run `python python/uart_benchmark.py --port COM5 --count 100`. It prints each FPGA prediction beside the true label and reports the measured accuracy.
+
+The board wrappers use a 10 MHz Clocking Wizard output for the CNN core and UART. Actual timing closure, resource use, and bitstream generation must be confirmed by the Vivado implementation run; this workspace does not contain a runnable Vivado command-line executable. A batch build is available from the accelerator directory with `vivado -mode batch -source scripts/build_board_bitstream.tcl -tclargs int8` (or `int16`).
 
 ## Run the simulations with Icarus Verilog
 
@@ -46,7 +77,7 @@ For batch use after setup, run `vivado -mode batch -source scripts/run_simulatio
 Open Vivado's Tcl Console, change to this folder, then source one setup script:
 
 ```tcl
-cd C:/Users/User/Documents/ChatGPT/FinalYEARproject/mnist_cnn_accelerator
+cd path/to/mnist_cnn_accelerator
 source scripts/setup_vivado_int8.tcl
 ```
 

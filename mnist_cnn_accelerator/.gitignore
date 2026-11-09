@@ -1,10 +1,13 @@
 # Python cache
 __pycache__/
 *.py[cod]
+/tmp/
+/reports/~$*.docx
 
 # Vivado generated working files; keep .xpr, RTL, constraints, and source data
 vivado/**/.Xil/
 vivado/**/*.cache/
+vivado/**/*.gen/
 vivado/**/*.hw/
 vivado/**/*.ip_user_files/
 vivado/**/*.runs/

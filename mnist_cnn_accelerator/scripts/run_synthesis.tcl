@@ -2,9 +2,8 @@
 set precision [lindex $argv 0]
 if {$precision ni {int8 int16}} { error "Pass int8 or int16 as the first Tcl argument." }
 set root [file normalize [file join [file dirname [info script]] ..]]
-set project_name "mnist_cnn_${precision}"
-set project_file [file join $root vivado $precision ${project_name}.xpr]
-open_project $project_file
+set ::CNN_PRECISION $precision
+source [file join $root scripts create_vivado_project.tcl]
 launch_runs synth_1 -jobs 2
 wait_on_run synth_1
 open_run synth_1

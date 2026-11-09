@@ -50,6 +50,8 @@ for name,layer in layers.items():
     bias=np.rint(layer.bias.detach().numpy()/(si*ws)).astype(np.int64)
     ratio=si*ws/so
     multiplier=int(np.rint(ratio*(1<<31)))
+    if not 0 <= multiplier < (1 << 24):
+        raise OverflowError(f"Q31 multiplier does not fit the 24-bit RTL port in {name}: {multiplier}")
     q[name]=(qw,bias,multiplier)
     flat=qw.reshape(-1)
     np.savetxt(os.path.join(OUT,name+"_weight.txt"),flat.astype(np.int16),fmt="%d")
