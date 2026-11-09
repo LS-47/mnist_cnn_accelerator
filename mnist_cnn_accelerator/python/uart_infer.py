@@ -1,4 +1,4 @@
-"""Send one 28x28 grayscale image to the Nexys 4 DDR CNN over USB-UART."""
+"""Send one 28x28 grayscale image to the CNN over a serial USB-UART adapter."""
 import argparse
 import sys
 

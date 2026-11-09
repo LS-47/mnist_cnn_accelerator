@@ -15,3 +15,7 @@ vivado/**/*.sim/
 vivado/**/*.jou
 vivado/**/*.log
 vivado/**/*.str
+
+# Local simulation artifacts and preview images
+*.vvp
+/tmp_mnist_*_preview.png

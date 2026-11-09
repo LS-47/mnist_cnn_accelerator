@@ -25,36 +25,36 @@ INT8 and INT16 exports are both derived from the same FP32 checkpoint. The INT8 
 
 Each inference core processes one image at a time. Its controller now tracks spatial and kernel coordinates with counters instead of synthesizing variable divide/modulo arithmetic. The Q31 requantizer uses the actual 24-bit positive multiplier range from the exported model instead of a 64-bit multiplier input.
 
-## Program the Nexys 4 DDR
+## Target board and clock
 
-The board-level tops use the USB-UART port so a complete image can be supplied from a PC; they do not rely on manually setting 784 pixel values on switches. Connect the board's programming/UART micro-USB cable. The host sends exactly 784 unsigned grayscale bytes in row-major order at 115200 baud, 8-N-1. The FPGA sends back the predicted class as one ASCII character (`0` through `9`) and shows the class in binary on LEDs 3:0. LED 15 indicates a result has been produced, LED 14 indicates inference is running, and LED 13 indicates the image receiver is ready.
+The active board target is the Xilinx ZC702 evaluation board with an XC7Z020-1CLG484C SoC (`xc7z020clg484-1` in Vivado). The board's system oscillator is a 200 MHz differential LVDS clock. The ZC702 clock module uses the 7-series MMCM to generate the 10 MHz clock used by the CNN core and UART. To convert the existing INT8 project in place, open `vivado/int8/mnist_cnn_int8.xpr` and source `scripts/upgrade_existing_int8_to_zc702.tcl` in the Vivado Tcl Console. The legacy `vivado/int16` and the old Nexys top/constraints are preserved separately.
 
-INT8 input pixels are the received byte values (0–255). INT16 converts each byte to the exported calibrated input range (0–3640) before inference. Both use the same trained checkpoint and their own exported weights. For arbitrary pictures, provide a centered 28×28 grayscale digit with a dark background and a light digit; `--invert` handles the opposite polarity.
+## ZC702 UART connection
 
-1. Open `vivado/int8/mnist_cnn_int8.xpr` or `vivado/int16/mnist_cnn_int16.xpr` in Vivado 2026.1.
-2. In the Vivado Tcl Console, set the precision and source `scripts/upgrade_vivado_project_for_board.tcl`, for example:
+The ZC702's onboard USB-UART bridge is connected to the Zynq processing system, not directly to programmable-logic pins. These pure-RTL CNN projects use a separate external USB-UART adapter on GPIO header J62 instead. Use a 2.5 V-compatible adapter or a suitable level shifter. Connect adapter TX to J62 pin 3 (PMOD2_2, FPGA RX), adapter RX to J62 pin 4 (PMOD2_3, FPGA TX), and connect grounds. Do not connect the adapter's VCC pin. These two PMOD signals are also wired to LEDs DS16 and DS15, so those LEDs may flicker during serial traffic.
 
-   ```tcl
-   set CNN_PRECISION int8
-   set project_dir [get_property DIRECTORY [current_project]]
-   set project_root [file normalize [file join $project_dir .. ..]]
-   source [file join $project_root scripts upgrade_vivado_project_for_board.tcl]
-   ```
+The host sends 784 unsigned grayscale bytes in row-major order at 115200 baud, 8-N-1. The FPGA returns one ASCII digit (`0` through `9`). INT8 uses the received bytes directly; INT16 maps each byte to the calibrated input range 0–3640. For arbitrary images, supply a centered 28×28 grayscale digit with a dark background and a light digit; use `--invert` for the opposite polarity.
 
-3. Confirm the project top is `nexys4ddr_int8_top` (or `nexys4ddr_int16_top`), then run **Generate Bitstream**. The script loads the 100 MHz Nexys clock constraint, board pin assignments, UART/board RTL, clock wizard and precision-specific weight memories.
-4. Program the board with the resulting `.bit` file using Hardware Manager. In Windows Device Manager, find the board's USB Serial Port COM number.
-5. Install host dependencies and classify an image:
+## Build and run on the ZC702
 
-   ```powershell
-   python -m pip install -r requirements-hardware.txt
-   python python/uart_infer.py --port COM5 --image path\to\digit.png
-   ```
+In Vivado 2026.1, open the existing INT8 project and run this from the Tcl Console:
 
-   Replace `COM5` and the image path as needed. The LED class and serial reply should show a digit after the image is sent.
+```tcl
+source {C:/.../mnist_cnn_accelerator/scripts/upgrade_existing_int8_to_zc702.tcl}
+```
 
-   To measure real FPGA accuracy on the first 100 official MNIST test images, run `python python/uart_benchmark.py --port COM5 --count 100`. It prints each FPGA prediction beside the true label and reports the measured accuracy.
+The script updates the existing project to `xc7z020clg484-1`, selects `zc702_int8_top`, replaces Nexys constraints with the ZC702 XDC, and replaces the locked legacy clock IP with the ZC702 MMCM RTL module. It does not launch synthesis or implementation. Run those steps yourself after confirming the top and XDC.
 
-The board wrappers use a 10 MHz Clocking Wizard output for the CNN core and UART. Actual timing closure, resource use, and bitstream generation must be confirmed by the Vivado implementation run; this workspace does not contain a runnable Vivado command-line executable. A batch build is available from the accelerator directory with `vivado -mode batch -source scripts/build_board_bitstream.tcl -tclargs int8` (or `int16`).
+Install the host dependencies and classify an image using the external adapter's COM port:
+
+```powershell
+python -m pip install -r requirements-hardware.txt
+python python/uart_infer.py --port COM5 --image path\to\digit.png
+```
+
+Replace `COM5` and the image path as needed. For a 100-image hardware accuracy run, use `python python/uart_benchmark.py --port COM5 --count 100`; it reports each FPGA prediction beside the true MNIST label.
+
+The supplied board target and XDC are prepared for the ZC702, but synthesis, timing closure, bitstream generation, and physical board inference must still be confirmed by running Vivado on the board.
 
 ## Run the simulations with Icarus Verilog
 
@@ -81,7 +81,7 @@ cd path/to/mnist_cnn_accelerator
 source scripts/setup_vivado_int8.tcl
 ```
 
-This creates `vivado/int8/mnist_cnn_int8.xpr`, targeting `xc7a100tcsg324-1`. Use `source scripts/setup_vivado_int16.tcl` for the separate INT16 project. In each project, run **Run Behavioral Simulation**. The Tcl batch command in `scripts/run_synthesis.tcl` generates synthesis utilization and timing reports after the corresponding project exists.
+These legacy setup scripts create Nexys 4 DDR projects targeting `xc7a100tcsg324-1`. For the selected ZC702 board, convert the existing INT8 project with `scripts/upgrade_existing_int8_to_zc702.tcl`.
 
 The setup targets the XC7A100T part but does not assume a board pinout. Run synthesis separately for INT8 and INT16; both configurations do not run simultaneously. Vivado synthesis and the resulting LUT, DSP, BRAM, and timing comparison are still to be generated.
 
